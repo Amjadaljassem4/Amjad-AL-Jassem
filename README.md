@@ -118,14 +118,28 @@ After the setup phase the robot will enter the main loop. The client robot will 
 
 ## Features
 
-- [x] US01B:       As a customer, I want the robot to pick up items from a designated position.
-- [x] US02B:       As a customer, I want the robot to drop items off at a designated position. 
-- [x] US03: &nbsp; As a customer, I want the robot to be able to determine if an item is present at a given location.
-- [x] US04: &nbsp; As a customer, I want the robot to tell me the color of an item.
-- [x] US05: &nbsp; As a customer, I want the robot to drop items off at different locations based on the color of the item.
-- [x] US06: &nbsp; As a customer, I want the robot to be able to pick up items from elevated positions.
-- [x] US08B:       As a customer, I want to be able to calibrate items with three different colors and drop the items off at specific drop-off zones based on color.
-- [x] US09: &nbsp; As a customer, I want the robot to check the pickup location periodically to see if a new item has arrived.
-- [x] US10: &nbsp; As a customer, I want the robots to sort items at a specific time.
-- [x] US11: &nbsp; As a customer, I want two robots to communicate and work together on items sorting without colliding with each other.
-- [x] US12: &nbsp; As a customer, I want to be able to manually set the locations and heights of one pick-up zone and two drop-off zones.
+US01: As a customer, I want the robot to pick up items.
+ US02: As a customer, I want the robot to drop off items.
+ US03: As a customer, I want the robot to be able to determine if an item is present at a
+given location based on size (large, medium, and small)
+ US04: As a customer, I want the robot to tell me the colour of an item.
+ US05: As a customer, I want the robot to drop items off at different locations based on
+the colour of the item.
+ US06:As a customer, I want the robot to be able to pick up items from elevated positions.
+ US07: As a customer, I want to be able to calibrate maximum of three different colors
+and assign them to specific drop-off zones.
+Updated requirements:
+ US01B: As a customer, I want the robot to pick up items from a designated position
+ US02B As a customer, I want the robot to drop items off at a designated position
+ US04B: As a customer, I want the robot to tell me the color of an item at a designated
+position.
+Extra Requirements:
+ US08: As a customer, I want the robot to check the pickup location periodically to see if
+a new item has arrived.
+ US09: As a customer, I want the robots to sort items at a specific time.
+ US10: As a customer, I want two robots (from two teams) to communicate and work
+together on items sorting without colliding with each other.
+ US11: As a customer, I want to be able to manually set the locations and heights of one
+pick-up zone and two drop-off zones. (Implemented either by manually dragging the arm
+to a position or using buttons).
+
