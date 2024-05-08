@@ -38,9 +38,7 @@ In this part you will get to know how to get the robot up and running. This will
 - Connecting the robot to the computer
 - Uploading the code and running the program
 - Calibrating one robot
-- Connecting the robot to another robot
-- Calibrating two robots
-- Running the robot or robots
+- Running the robot 
 
 ### Connect to PC
 
@@ -89,32 +87,13 @@ After visibility has been turned on, on both robots, the robots need to be paire
 
 The robots are now connected.
 
-### Calibrating two robots
-
-When using two robots that are paired via bluetooth, one has to be a server and the other a client. When starting the program, click the up-button on one robot in order to make it a server. Then click down-button on the other robot in order to connect them. It is important to select the server before selecting the client. Also the server robot's name has to be 'ev3dev'.
-
-The robots will then calibrate, it is important that the robots can move freely at this phase. At the end of the calibration phase the robots will play a tune in sync.
-
-After the calibration it is time to set locations. The display will tell you what positions to set. Both robots will be prompted to set a shared location. The shared location is the location that the two robots have in common. Use the buttons (left, right, up, down) on one robot at a time to navigate to the chosen location, then press the middle button to store it. Follow the instructions on the screen to set positions. When calibrating the item colors, the server will pickup items from the set pickup location, while the client will pickup items from the shared location. The calibration of item colors is done in the same way as with one single robot as described above.
-
-When both the server and client are calibrated, the main loop will begin.
-
 ### Running
 
 #### One robot
 After the setup phase the robot will enter the main loop. The program will repeat the following:
 * Try to pickup an item at the pickup location.
 * If there is an item at the pickup location, the robot will read the color of the item and determine the location that matches the color best. Then the robot will move to that location and drop off the item there. 
-* If there is no item at the pickup location, the robot will wait for 3 seconds and then look for an item again.
-
-#### Two robots
-After the setup phase the robot will enter the main loop. The client robot will be in its resting position. The program will repeat the following:
-
-* The server robot tries to pickup an item at the pickup location.
-* If there is no item at the pickup location, the server robot will wait for 3 seconds and then look for an item again.
-* If there is an item at the pickup location, the server robot will read its color and determine which location is closest to the color. 
-  * If the location belongs to the client robot, the server robot will drop the item off at the shared position, then return to the pickup location and wait there, while the client robot picks up the item and places it at the given location. 
-  * If the location belongs to the server robot, the server robot will drop off the item at the given location.
+* If there is no item at the pickup location, the robot will wait for few seconds and then look for an item again.
 
 
 ## Features
