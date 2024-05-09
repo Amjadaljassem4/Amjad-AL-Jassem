@@ -1,9 +1,11 @@
+
 #!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import Motor, TouchSensor, ColorSensor
 from pybricks.parameters import Port, Color, Stop, Direction, Button
 from pybricks.tools import wait
 import time
+import threading
 
 ev3 = EV3Brick()
 gripper_motor = Motor(Port.A)
@@ -34,19 +36,6 @@ elbow_sensor = ColorSensor(Port.S2)
 # angle to make this the zero point. Finally, hold the motor
 # in place so it does not move.
 
-
-# def get_current_time(): 
-#     return time.localtime().tm_hour, time.localtime().tm_min
-
-# start_hour = 14
-# start_minute = 24
-
-# current_hour, current_minute = get_current_time()
-
-# while not (current_hour == start_hour and current_minute == start_minute):
-#     wait(1000)
-#     print(get_current_time())
-#     current_hour, current_minute = get_current_time()
 elbow_motor.run_time(-30, 1000)
 
 elbow_motor.run(15)
@@ -83,35 +72,58 @@ def choose_parking():
     if Button.CENTER in ev3.buttons.pressed():
         return 157
 
+paused = False
+stopped = False
+
 def robot_pick(position):
+    global stopped
     # This function makes the robot base rotate to the indicated
     # position. There it lowers the elbow, closes the gripper, and
     # raises the elbow to pick up the object.
 
     # Rotate to the pick-up position.
     base_motor.run_target(60, position)
+    if stopped:
+        return
     # Lower the arm.
     elbow_motor.run_until_stalled(-40, then=Stop.HOLD, duty_limit=10) #-29
+    if stopped:
+        return
+    elbow_motor.run_time(20,1000)
+    if stopped:
+        return
     # Close the gripper to grab the wheel stack.
     gripper_motor.run_until_stalled(200, then=Stop.HOLD, duty_limit=40)
+    if stopped:
+        return
     # Raise the arm to lift the wheel stack.
     elbow_motor.run_target(50, 0) #40
+    if stopped:
+        return
 
 
 def robot_release(position):
+    global stopped
     # This function makes the robot base rotate to the indicated
     # position. There it lowers the elbow, opens the gripper to
     # release the object. Then it raises its arm again.
 
     # Rotate to the drop-off position.
     base_motor.run_target(60, position)
+    if stopped:
+        return
     # Lower the arm to put the wheel stack on the ground.
     elbow_motor.run_until_stalled(-40, then=Stop.HOLD, duty_limit=10)
+    if stopped:
+        return
     # Open the gripper to release the wheel stack.
     gripper_motor.run_target(200, -90)
+    if stopped:
+        return
     # Raise the arm.
     elbow_motor.run_target(40, 0)
-
+    if stopped:
+        return
 
 
 # Play three beeps to indicate that the initialization is complete.
@@ -131,7 +143,7 @@ wait(100)
 rightParking = elbow_sensor.color()
 rightParkingReflectionSmall = elbow_sensor.reflection()
 print(elbow_sensor.color())
-print(elbow_sensor.reflection()) #två ord bara
+print(elbow_sensor.reflection()) #tvÃ¥ ord bara
 robot_release(RIGHT)
 ev3.speaker.beep()
 wait(1000)
@@ -185,49 +197,109 @@ parkingSpots = {
 }
 
 
-while True:
-    #elbow_sensor()
 
-    # Move a wheel stack from the left to the middle.
-    robot_pick(ELNOUR)
-    wait(100)
-    currentColor = elbow_sensor.color()
-    currentReflection = elbow_sensor.reflection()
-    ev3.screen.print(currentColor)
+def pause_resume():
+    global paused
+    while True:
+        if Button.DOWN in ev3.buttons.pressed():
+            paused = not paused
+            if paused:
+                ev3.screen.print("Paused")
+            else:
+                ev3.screen.clear
+            wait(1000)
 
-    if currentColor == middleParking:
-        if currentReflection < middleParkingReflection:
-            ev3.screen.print("SMALL")
+def stop_motors():
+    gripper_motor.stop()
+    elbow_motor.stop()
+    base_motor.stop()
+
+
+def stop_robot():
+    global stopped
+    while True:
+        if Button.UP in ev3.buttons.pressed():
+            stop_motors()
+            stopped = True
+            ev3.screen.print("Emergency Stop")
+            wait(1000)
+        
+
+
+
+pause_thread = threading.Thread(target=pause_resume)
+stop_thread = threading.Thread(target=stop_robot)
+
+pause_thread.start()
+stop_thread.start()
+
+while not stopped:
+    if not paused:
+        #elbow_sensor()
+
+        # Move a wheel stack from the left to the middle.
+        robot_pick(ELNOUR)
+        if stopped:
+            break
+        wait(100)
+        currentColor = elbow_sensor.color()
+        currentReflection = elbow_sensor.reflection()
+        ev3.screen.print(currentColor)
+
+        if currentColor == middleParking:
+            if currentReflection < middleParkingReflection:
+                ev3.screen.print("SMALL")
+            else:
+                ev3.screen.print("LARGE")
+            if parkingSpots["middle"] is None:
+                while not ev3.buttons.pressed():
+                    wait(2000)
+                parkingSpots["middle"] = choose_parking()
+            if stopped:
+                break
+            robot_release(parkingSpots["middle"])
+            if stopped:
+                break
+        elif currentColor == rightParking:
+            if currentReflection < rightParkingReflection:
+                ev3.screen.print("SMALL")
+            else:
+                ev3.screen.print("LARGE")
+            if parkingSpots["right"] is None:
+                while not ev3.buttons.pressed():
+                    wait(2000)
+                parkingSpots["right"] = choose_parking()
+            if stopped:
+                break
+            robot_release(parkingSpots["right"])
+            if stopped:
+                break
+        elif currentColor == leftParking:
+            if currentReflection < leftParkingReflection:
+                ev3.screen.print("SMALL")
+            else:
+                ev3.screen.print("LARGE")
+            if parkingSpots["left"] is None:
+                while not ev3.buttons.pressed():
+                    wait(2000)
+                parkingSpots["left"] = choose_parking()
+            if stopped:
+                break
+            robot_release(parkingSpots["left"])
+            if stopped:
+                break
+        elif currentColor is Color.BLACK:
+            if stopped:
+                break
+            wait(10000)
         else:
-            ev3.screen.print("LARGE")
-        if parkingSpots["middle"] is None:
-            while not ev3.buttons.pressed():
-                wait(2000)
-            parkingSpots["middle"] = choose_parking()
-        robot_release(parkingSpots["middle"])
-    elif currentColor == rightParking:
-        if currentReflection < rightParkingReflection:
-            ev3.screen.print("SMALL")
-        else:
-            ev3.screen.print("LARGE")
-        if parkingSpots["right"] is None:
-            while not ev3.buttons.pressed():
-                wait(2000)
-            parkingSpots["right"] = choose_parking()
-        robot_release(parkingSpots["right"])
-    elif currentColor == leftParking:
-        if currentReflection < leftParkingReflection:
-            ev3.screen.print("SMALL")
-        else:
-            ev3.screen.print("LARGE")
-        if parkingSpots["left"] is None:
-            while not ev3.buttons.pressed():
-                wait(2000)
-            parkingSpots["left"] = choose_parking()
-        robot_release(parkingSpots["left"])
-    elif currentColor is Color.BLACK:
-        wait(10000)
+            if stopped:
+                break
+            robot_release(ELNOUR)
+
+            ev3.screen.clear()
+            wait(1000)
     else:
-        robot_release(ELNOUR)
+        wait(500)
 
-    ev3.screen.clear()
+
